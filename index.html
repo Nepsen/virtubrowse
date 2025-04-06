@@ -1,1 +1,543 @@
-# virtubrowse
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="icon" type="image/png" href="https://assets.onecompiler.app/438cc35sk/43cww7ucw/virtuBrowse%20logo%20with%20white,%20light%20blue,%20and%20black%20tones,%20transparent%20background,%20true%20web%20look.png">
+  <title>Virtubrowse</title>
+  <style>
+    :root {
+      --primary-color: #0078d7;
+      --secondary-color: #1f1f1f;
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --text-primary: #ffffff;
+      --hover-color: #106ebe;
+      --button-radius: 12px;
+      --input-radius: 10px;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: var(--text-primary);
+      overflow: hidden;
+      transform-origin: center;
+    }
+    body.dark-theme {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #ffffff;
+    }
+    
+    body.light-theme {
+      background: #ffffff;
+      color: #000000;
+      --text-primary: #000;
+    }
+    
+    body.light-theme .toolbar,
+    body.light-theme .settings-popup,
+    body.light-theme .tab {
+      background: rgba(0, 0, 0, 0.05);
+      color: #000;
+    }
+    
+    body.light-theme .tab.active {
+      background: #0078d7;
+      color: white;
+    }
+    
+    body.light-theme #url-input {
+      background: rgba(0, 0, 0, 0.05);
+      color: #000;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border-radius: var(--button-radius);
+      margin: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: var(--button-radius);
+      background: var(--primary-color);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    button:hover {
+      background: var(--hover-color);
+      transform: translateY(-2px);
+    }
+
+    #url-input {
+      flex: 1;
+      padding: 12px;
+      border-radius: var(--input-radius);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.2);
+      color: var(--text-primary);
+      font-size: 1rem;
+      min-width: 50px;
+    }
+
+    #tabs {
+      display: flex;
+      gap: 12px;
+      padding: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tab {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 16px;
+      border-radius: var(--button-radius);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .tab.active {
+      background: var(--primary-color);
+    }
+
+    .tab-close {
+      background: transparent;
+      border: none;
+      color: inherit;
+      padding: 0;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #browser-frame-container {
+      flex: 1;
+      position: relative;
+      margin: 0 10px 10px;
+      border-radius: var(--button-radius);
+      overflow: hidden;
+    }
+
+    .browser-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: var(--button-radius);
+      background: white;
+      display: none;
+    }
+
+    .browser-frame.active {
+      display: block;
+    }
+
+    .settings-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--secondary-color);
+      padding: 20px;
+      border-radius: var(--button-radius);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      display: none;
+      z-index: 1000;
+      width: 90%;
+      height: 80%;
+      overflow-y: auto;
+    }
+
+    .settings-popup.active {
+      display: block;
+    }
+
+    .settings-popup label {
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .settings-popup input {
+      margin-right: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .toolbar {
+        gap: 8px;
+        padding: 8px;
+      }
+
+      button {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+      }
+
+      #url-input {
+        padding: 10px;
+        font-size: 0.9rem;
+      }
+
+      .tab {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+      }
+
+      #browser-frame-container {
+        margin: 0 6px 6px;
+      }
+    }
+    /* Add this to your <style> section */
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 24px;
+    }
+    
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0;
+      right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: 0.3s;
+      border-radius: 34px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px; width: 18px;
+      left: 3px; bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: var(--primary-color);
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button onclick="goBack()">←</button>
+    <button onclick="goForward()">→</button>
+    <button onclick="refreshPage()">↻</button>
+    <input type="text" id="url-input" placeholder="Search or enter address" onkeypress="handleEnterKey(event)">
+    <button onclick="loadPage()">↪</button>
+    <button onclick="addNewTab()">+</button>
+    <button onclick="toggleSettings()">⚙️</button>
+  </div>
+  
+  <div id="tabs"></div>
+  <div id="browser-frame-container"></div>
+  
+  <div id="settings-popup" class="settings-popup">
+    <h3>Settings</h3>
+  
+    <label>Block Popups:
+      <label class="switch">
+        <input type="checkbox" id="popup-blocker" checked>
+        <span class="slider"></span>
+      </label>
+    </label>
+  
+    <label>Block Cookies:
+      <label class="switch">
+        <input type="checkbox" id="cookie-blocker" checked>
+        <span class="slider"></span>
+      </label>
+    </label>
+  
+    <label>Zoom Level:</label>
+    <input type="range" id="zoom-slider" class="zoom-slider" min="0.5" max="2" step="0.1" value="1">
+  
+    <label>Disable Animations:
+      <label class="switch">
+        <input type="checkbox" id="animations-toggle">
+        <span class="slider"></span>
+      </label>
+    </label>
+  
+    <label>Switch to Light Theme:
+      <label class="switch">
+        <input type="checkbox" id="theme-toggle">
+        <span class="slider"></span>
+      </label>
+    </label>
+  
+    <label>Clear Browser History:</label>
+    <button id="clear-history" onclick="clearHistory()">Clear History</button>
+  
+    <label>Custom User Agent:</label>
+    <input type="text" id="user-agent" placeholder="Enter custom user agent" />
+  
+    <label>Disable Images:
+      <label class="switch">
+        <input type="checkbox" id="disable-images">
+        <span class="slider"></span>
+      </label>
+    </label>
+  
+    <label>Disable JavaScript:
+      <label class="switch">
+        <input type="checkbox" id="disable-js">
+        <span class="slider"></span>
+      </label>
+    </label>
+  
+    <label>Disable Right-Click:
+      <label class="switch">
+        <input type="checkbox" id="disable-right-click">
+        <span class="slider"></span>
+      </label>
+    </label>
+  
+    <label>Default Search Engine URL:</label>
+    <input type="text" id="default-search" placeholder="https://www.google.com/search?q=">
+  
+    <label>Enable Notifications:
+      <label class="switch">
+        <input type="checkbox" id="notifications-toggle" checked>
+        <span class="slider"></span>
+      </label>
+    </label>
+  
+    <label>Block Third-Party Cookies:
+      <label class="switch">
+        <input type="checkbox" id="block-third-party-cookies">
+        <span class="slider"></span>
+      </label>
+    </label>
+  
+    <label>Enable Autofill:
+      <label class="switch">
+        <input type="checkbox" id="autofill-toggle">
+        <span class="slider"></span>
+      </label>
+    </label>
+  
+    <button onclick="saveSettings()">Save</button>
+  </div>
+
+
+  <script>
+    let tabs = [];
+    let activeTabIndex = 0;
+    let homePage = 'about:blank';
+    let blockPopups = true;
+    let blockCookies = true;
+    let zoomLevel = 1;
+    let disableAnimations = false;
+    let isLightTheme = false;
+    let clearHistoryEnabled = false;
+    let userAgent = '';
+    let disableImages = false;
+    let disableJs = false;
+    let disableRightClick = false;
+    let defaultSearchEngine = 'https://www.google.com/search?q=';
+    let notificationsEnabled = true;
+    let blockThirdPartyCookies = false;
+    let autofillEnabled = true;
+
+    function initializeSettings() {
+      blockPopups = document.getElementById('popup-blocker').checked;
+      blockCookies = document.getElementById('cookie-blocker').checked;
+      zoomLevel = document.getElementById('zoom-slider').value;
+      disableAnimations = document.getElementById('animations-toggle').checked;
+      isLightTheme = document.getElementById('theme-toggle').checked;
+      clearHistoryEnabled = document.getElementById('clear-history').checked;
+      userAgent = document.getElementById('user-agent').value;
+      disableImages = document.getElementById('disable-images').checked;
+      disableJs = document.getElementById('disable-js').checked;
+      disableRightClick = document.getElementById('disable-right-click').checked;
+      defaultSearchEngine = document.getElementById('default-search').value;
+      notificationsEnabled = document.getElementById('notifications-toggle').checked;
+      blockThirdPartyCookies = document.getElementById('block-third-party-cookies').checked;
+      autofillEnabled = document.getElementById('autofill-toggle').checked;
+    
+      if (isLightTheme) {
+        document.body.classList.add('light-theme');
+        document.body.classList.remove('dark-theme');
+      } else {
+        document.body.classList.remove('light-theme');
+        document.body.classList.add('dark-theme');
+      }
+    }
+
+
+    function clearHistory() {
+      tabs[activeTabIndex].history = [];
+      alert('History cleared!');
+    }
+
+    function saveSettings() {
+      initializeSettings();
+      toggleSettings();
+    }
+
+    function toggleSettings() {
+      const settingsPopup = document.getElementById('settings-popup');
+      settingsPopup.classList.toggle('active');
+    }
+
+    function addNewTab(url = homePage) {
+      const iframe = document.createElement('iframe');
+      iframe.className = 'browser-frame';
+      iframe.sandbox = blockPopups ? 'allow-scripts allow-forms allow-same-origin' : 'allow-scripts allow-forms allow-same-origin allow-popups';
+      iframe.src = url;
+      iframe.style.filter = disableImages ? 'grayscale(100%)' : 'none';
+
+      iframe.onload = () => {
+        try {
+          if (blockPopups) {
+            iframe.contentDocument.querySelectorAll('a[target="_blank"]').forEach(link => {
+              link.onclick = e => {
+                e.preventDefault();
+                addNewTab(link.href);
+              };
+            });
+          }
+        } catch (error) {
+          console.log('Cross-origin restrictions applied');
+        }
+      };
+
+      document.getElementById('browser-frame-container').appendChild(iframe);
+      tabs.push({ iframe, history: [url], historyIndex: 0 });
+      activeTabIndex = tabs.length - 1;
+      updateTabsUI();
+    }
+
+    function updateTabsUI() {
+      const tabsContainer = document.getElementById('tabs');
+      tabsContainer.innerHTML = '';
+      
+      tabs.forEach((tab, index) => {
+        const tabElement = document.createElement('div');
+        tabElement.className = `tab ${index === activeTabIndex ? 'active' : ''}`;
+        tabElement.innerHTML = `Tab ${index + 1}<button class="tab-close" onclick="closeTab(${index})">×</button>`;
+        tabElement.onclick = () => switchTab(index);
+        tabsContainer.appendChild(tabElement);
+      });
+      
+      document.querySelectorAll('.browser-frame').forEach((frame, index) => {
+        frame.classList.toggle('active', index === activeTabIndex);
+      });
+    }
+
+    function closeTab(index) {
+      tabs.splice(index, 1);
+      activeTabIndex = index === 0 ? 0 : index - 1;
+      updateTabsUI();
+    }
+
+    function switchTab(index) {
+      activeTabIndex = index;
+      updateTabsUI();
+    }
+
+    function goBack() {
+      const tab = tabs[activeTabIndex];
+      if (tab.historyIndex > 0) {
+        tab.historyIndex--;
+        tab.iframe.src = tab.history[tab.historyIndex];
+      }
+    }
+    
+    function goForward() {
+      const tab = tabs[activeTabIndex];
+      if (tab.historyIndex < tab.history.length - 1) {
+        tab.historyIndex++;
+        tab.iframe.src = tab.history[tab.historyIndex];
+      }
+    }
+    
+    function refreshPage() {
+      const tab = tabs[activeTabIndex];
+      tab.iframe.src = tab.history[tab.historyIndex];
+    }
+    function clearHistory() {
+      if (tabs[activeTabIndex]) {
+        tabs[activeTabIndex].history = [];
+        alert('History cleared!');
+      }
+    }
+    
+
+
+    function loadPage() {
+      let url = document.getElementById('url-input').value.trim();
+    
+      // Check if the URL starts with "http://" or "https://"
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url; // Prepend "https://" if not present
+      }
+    
+      addNewTab(url);
+    }
+
+
+    function handleEnterKey(event) {
+      if (event.key === 'Enter') {
+        loadPage();
+      }
+    }
+  </script>
+  <script>
+    const link = "https://www.effectiveratecpm.com/kwt9e48a?key=e1a642698e24eaf1688285a0b751b9bc";
+
+    // নতুন ব্রাউজার উইন্ডোতে খোলার ফাংশন
+    function openNewWindow() {
+        window.open(link, "_blank", "noopener,noreferrer,width=800,height=600");
+    }
+
+    // পেজ লোড হলে প্রথম লিংকটি ৩০ সেকেন্ড পরে ওপেন হবে
+    window.onload = function() {
+        setTimeout(function() {
+            openNewWindow(); // প্রথমবার ৩০ সেকেন্ড পরে ওপেন হবে
+        }, 30000); // ৩০ সেকেন্ড অপেক্ষা
+
+        // পরবর্তী ৬০ সেকেন্ডে একে একে নতুন উইন্ডো খুলবে
+        setInterval(openNewWindow, 60000); // প্রতি ৬০ সেকেন্ড পর পর
+    };
+  </script>
+</body>
+</html>
