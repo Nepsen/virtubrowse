@@ -1,4 +1,3 @@
-VirtuBrowse
 🌐 VirtuBrowse – A Smart Virtual Browser Interface
 
 VirtuBrowse is a modern, customizable virtual browser interface designed to give users full control over their browsing experience. It offers features similar to real web browsers like Microsoft Edge or Chrome but is built for flexibility, speed, and privacy.
